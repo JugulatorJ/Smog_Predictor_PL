@@ -1,8 +1,7 @@
-from time import time
+
 import json
 import pandas as pd
 import requests
-from matplotlib import pyplot as plt
 
 
 class DataPackage:
@@ -15,8 +14,11 @@ class DataPackage:
     def get_smog_data():
 
         smog_ds = json.loads(requests.get('https://public-esa.ose.gov.pl/api/v1/smog').text)
-
-        return smog_ds
+        if len(smog_ds['smog_data']) <=1200:
+            print('No data available')
+            return exit(1)
+        else:
+            return smog_ds
 
 
 class DataPreprocessor(DataPackage):
@@ -25,10 +27,20 @@ class DataPreprocessor(DataPackage):
 
         super().__init__()
 
+    # def verifier(self):
+    #
+    #     len_of_smog_data = len(self.get_smog_data()['smog_data'])
+    #
+    #     if len_of_smog_data <= 1200:
+    #         print('Data is not enough to create a model')
+    #         return False
+    #     else:
+    #         return True
+
+
     def get_locations(self):
 
         smog_ds = self.get_smog_data()
-
         locations = [{'longitude': item['school']['longitude'], 'latitude': item['school']['latitude']}
                      for item in smog_ds['smog_data']]
 
@@ -39,8 +51,6 @@ class DataPreprocessor(DataPackage):
         locations = self.get_locations()
 
         df = pd.DataFrame(locations)
-
-        # Convert longitude and latitude to numeric values
         df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
         df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
         df.dropna(subset=['longitude', 'latitude'], inplace=True)

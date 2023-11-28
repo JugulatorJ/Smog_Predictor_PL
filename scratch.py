@@ -42,20 +42,17 @@ plt.show()
 # plt.grid()
 # plt.show()
 
-# number_of_clusters = KMModel.fit_shiloette()
 kmeans = KMeans(n_clusters=6, n_init=300, random_state=1)
 kmeans.fit_predict(coordinates.values)
-
-
 h = 0.001
 x_min, x_max = coordinates['longitude'].min(), coordinates['longitude'].max()
 y_min, y_max = coordinates['latitude'].min(), coordinates['latitude'].max()
 xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
 Z = kmeans.predict(np.c_[xx.ravel(), yy.ravel()])
 Z = Z.reshape(xx.shape)
-
 labels = kmeans.labels_
 centroids = kmeans.cluster_centers_
+
 plt.figure(1, figsize=(10,4))
 plt.clf()
 plt.imshow(Z, interpolation='nearest', extent=(xx.min(), xx.max(), yy.min(), yy.max()),
