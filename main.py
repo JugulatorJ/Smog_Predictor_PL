@@ -21,7 +21,10 @@ def main():
         model.clustering(number_of_clusters)
     else:
         number_of_clusters = model.fit_shiloette()
-        model.clustering(number_of_clusters)
+        clustered_model = model.clustering(number_of_clusters)
+        model.plot_clusters(clustered_model)
+        user_cluster = model.user_cluster(clustered_model)
+        model.plot_user_cluster(clustered_model, user_cluster)
 
 if __name__ == '__main__':
     main()

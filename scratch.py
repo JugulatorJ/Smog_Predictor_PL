@@ -64,4 +64,12 @@ plt.ylabel('Latitude (y)')
 plt.title('Clustering')
 plt.show()
 
+x1 = centroids[0][0]
+y1 = centroids[0][1]
+x2 = user_longitude
+y2 = user_latitude
+
+
+def get_pythagorean_distance(x1, y1, x2, y2):
+    return np.sqrt((x2-x1)**2 + (y2-y1)**2)
 

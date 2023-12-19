@@ -1,4 +1,3 @@
-
 import json
 import pandas as pd
 import requests
@@ -27,23 +26,13 @@ class DataPreprocessor(DataPackage):
 
         super().__init__()
 
-    # def verifier(self):
-    #
-    #     len_of_smog_data = len(self.get_smog_data()['smog_data'])
-    #
-    #     if len_of_smog_data <= 1200:
-    #         print('Data is not enough to create a model')
-    #         return False
-    #     else:
-    #         return True
-
 
     def get_locations(self):
 
         smog_ds = self.get_smog_data()
-        locations = [{'longitude': item['school']['longitude'], 'latitude': item['school']['latitude']}
-                     for item in smog_ds['smog_data']]
-
+        locations = [{'longitude': float(item['school']['longitude']), 'latitude': float(item['school']['latitude'])}
+                     for item in smog_ds['smog_data'] if 14.07 <= float(item['school']['longitude']) <= 24.09
+                     and 49.0 <= float(item['school']['latitude']) <= 55.0]
         return locations
 
     def create_data_frame(self):
