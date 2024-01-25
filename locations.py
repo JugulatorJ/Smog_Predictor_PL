@@ -4,7 +4,7 @@ from geopy import Nominatim
 class VoivodLoc:
 
     def __init__(self):
-        # # calling the Nominatim tool
+
         self.loc = Nominatim(user_agent="GetLoc")
 
     def locations(self):
@@ -15,7 +15,7 @@ class VoivodLoc:
         capital_loc = {}
 
         for capital_city in sorted(voi_capitals):
-            # entering the location name
+
             get_loc = self.loc.geocode(capital_city)
             capital_loc[capital_city] = {'longitude': get_loc.longitude, 'latitude': get_loc.latitude}
 
@@ -29,7 +29,7 @@ class UserLoc(VoivodLoc):
 
 
     def get_user_loc(self):
-        # entering the location name
+
         get_loc = self.loc.geocode(input('Enter your location: '))
         user_loc = {'longitude': get_loc.longitude, 'latitude': get_loc.latitude}
         return user_loc

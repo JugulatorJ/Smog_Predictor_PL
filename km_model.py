@@ -12,8 +12,11 @@ warnings.filterwarnings("ignore")
 
 class KMModel:
 
-    coordinates = data_preprocessor.DataPreprocessor().transform_to_coordinates()
     user_loc = locations.UserLoc().get_user_loc()
+    all_data = data_preprocessor.DataPreprocessor().create_all_data_frame()
+    coordinates = data_preprocessor.DataPreprocessor().transform_to_coordinates()
+    coordinates_labeled = data_preprocessor.DataPreprocessor().create_loc_data_frame()
+    cleaned_data = data_preprocessor.DataPreprocessor().merge_data_sets()
 
     def __init__(self, coordinates):
 
@@ -34,6 +37,7 @@ class KMModel:
     def fit_shiloette(self):
 
         score_list = {}
+
         for k in range(2, 18):
             kmeans = KMeans(n_clusters=k, init='k-means++', random_state=1).fit(self.coordinates).labels_
             score = silhouette_score(self.coordinates, kmeans, metric='euclidean')
@@ -56,6 +60,7 @@ class KMModel:
         labels_1 = kmeans.labels_
         centroids_2 = kmeans.cluster_centers_
         clustered_model = [kmeans, xx, yy, z, labels_1, centroids_2]
+
         return clustered_model
 
     def plot_clusters(self, clustered_model):
@@ -78,6 +83,7 @@ class KMModel:
         plt.savefig(rf'C:\Users\HP\PycharmProjects\Smog_Predictor_PL\plots\clusters{str(int(time()))}.png',
                     bbox_inches='tight')
         plt.show()
+
         return
 
     def user_cluster(self, clustered_model):
@@ -102,6 +108,7 @@ class KMModel:
         plt.ylabel('Latitude (y)')
         plt.title('User Cluster')
         plt.show()
+
         return
 
     def plot_loc_data(self):
@@ -113,13 +120,14 @@ class KMModel:
         plt.title('Smog Data Locations')
         plt.savefig(rf'C:\Users\HP\PycharmProjects\Smog_Predictor_PL\plots\smog_locs{str(int(time()))}.png',
                     bbox_inches='tight')
-
         plt.show()
         plt.pause(0.5)
         plt.close()
+
         return
 
     def plot_wcss_elbow(self):
+
         wcss = KMModel(self.coordinates).fit_elbow()
         plt.plot(1, 17, wcss, c='magenta')
         plt.xlabel('Number of clusters')
