@@ -1,14 +1,13 @@
 import warnings
 from km_model import KMModel
-
+from data_preprocessor import DataPreprocessor
 warnings.filterwarnings("ignore")
 
 
 def main():
 
-    coordinates = KMModel.coordinates
-    clean_data = KMModel.cleaned_data
-    model = KMModel(coordinates)
+    coordinates = DataPreprocessor().transform_to_coordinates()
+    model_km = KMModel(coordinates)
 
     while True:
 
@@ -17,7 +16,7 @@ def main():
         answer = input('y/n: ')
 
         if answer.lower() == 'y':
-            model.plot_loc_data()
+            model_km.plot_loc_data()
             break
 
         elif answer.lower() == 'n':
@@ -34,20 +33,26 @@ def main():
         answer = input('y/n: ')
 
         if answer.lower() == 'y':
-            model.plot_wcss_elbow()
-            number_of_clusters = int(input('Choose number of clusters: '))
-            clustered_model = model.clustering(number_of_clusters)
-            model.plot_clusters(clustered_model)
-            user_cluster = model.user_cluster(clustered_model)
-            model.plot_user_cluster(clustered_model, user_cluster)
+            model_km.plot_wcss_elbow()
+            while True:
+                try:
+                    number_of_clusters = int(input('Choose number of clusters: '))
+                    break
+                except ValueError:
+                    print('Wrong value. Provide integer number. Try again!')
+                    continue
+            clustered_model = model_km.clustering(number_of_clusters)
+            model_km.plot_clusters(clustered_model)
+            user_cluster = model_km.user_cluster(clustered_model)
+            model_km.plot_user_cluster(clustered_model, user_cluster)
             break
 
         elif answer.lower() == 'n':
-            number_of_clusters = model.fit_shiloette()
-            clustered_model = model.clustering(number_of_clusters)
-            model.plot_clusters(clustered_model)
-            user_cluster = model.user_cluster(clustered_model)
-            model.plot_user_cluster(clustered_model, user_cluster)
+            number_of_clusters = model_km.fit_shiloette()
+            clustered_model = model_km.clustering(number_of_clusters)
+            model_km.plot_clusters(clustered_model)
+            user_cluster = model_km.user_cluster(clustered_model)
+            model_km.plot_user_cluster(clustered_model, user_cluster)
             break
 
         else:

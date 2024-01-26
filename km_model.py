@@ -1,3 +1,4 @@
+import joblib
 import data_preprocessor
 import locations
 import numpy as np
@@ -5,6 +6,7 @@ import warnings
 from time import time
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+from sklearn.ensemble import RandomForestRegressor
 from matplotlib import pyplot as plt
 
 warnings.filterwarnings("ignore")
@@ -12,15 +14,13 @@ warnings.filterwarnings("ignore")
 
 class KMModel:
 
-    user_loc = locations.UserLoc().get_user_loc()
-    all_data = data_preprocessor.DataPreprocessor().create_all_data_frame()
-    coordinates = data_preprocessor.DataPreprocessor().transform_to_coordinates()
-    coordinates_labeled = data_preprocessor.DataPreprocessor().create_loc_data_frame()
-    cleaned_data = data_preprocessor.DataPreprocessor().merge_data_sets()
-
     def __init__(self, coordinates):
 
         self.coordinates = coordinates
+        self.user_loc = locations.UserLoc().get_user_loc()
+        self.all_data = data_preprocessor.DataPreprocessor().create_all_data_frame()
+        self.coordinates_labeled = data_preprocessor.DataPreprocessor().create_loc_data_frame()
+        self.cleaned_data = data_preprocessor.DataPreprocessor().merge_data_sets()
         self.kmeans = KMeans()
 
     def fit_elbow(self):
@@ -133,7 +133,7 @@ class KMModel:
 
     def plot_wcss_elbow(self):
 
-        wcss = KMModel(self.coordinates).fit_elbow()
+        wcss = self.fit_elbow()
         plt.plot(1, 17, wcss, c='magenta')
         plt.xlabel('Number of clusters')
         plt.ylabel('WCSS')
@@ -143,3 +143,4 @@ class KMModel:
         plt.show()
 
         return
+
