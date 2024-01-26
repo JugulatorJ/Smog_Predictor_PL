@@ -27,9 +27,19 @@ class UserLoc(VoivodLoc):
     def __init__(self):
         super().__init__()
 
-
     def get_user_loc(self):
 
-        get_loc = self.loc.geocode(input('Enter your location: '))
-        user_loc = {'longitude': get_loc.longitude, 'latitude': get_loc.latitude}
-        return user_loc
+        while True:
+
+            try:
+
+                get_loc = self.loc.geocode(input('Enter your location: '),
+                                           country_codes="pl",
+                                           featuretype='city')
+                user_loc = {'longitude': get_loc.longitude, 'latitude': get_loc.latitude}
+
+                return user_loc
+
+            except AttributeError:
+
+                print('Provide proper name of city in Poland.')

@@ -98,9 +98,14 @@ class KMModel:
 
     def plot_user_cluster(self, clustered_model, user_cluster_data):
 
+        xx = clustered_model[1]
+        yy = clustered_model[2]
+        z = clustered_model[3]
         centroids = clustered_model[5]
         plt.figure(1, figsize=(10, 4))
         plt.clf()
+        plt.imshow(z, interpolation='nearest', extent=(xx.min(), xx.max(), yy.min(), yy.max()),
+                   cmap=plt.cm.Pastel1, origin='lower')
         plt.scatter(x=user_cluster_data['longitude'], y=user_cluster_data['latitude'], c='blue', s=100)
         plt.scatter(x=centroids[:, 0], y=centroids[:, 1], s=300, c='red')
         plt.scatter(x=self.user_loc['longitude'], y=self.user_loc['latitude'], s=300, c='orange', marker='x')

@@ -13,15 +13,17 @@ class DataPackage:
     def get_smog_data():
 
         smog_ds = json.loads(requests.get('https://public-esa.ose.gov.pl/api/v1/smog').text)
+        size_of_smog_ds = len(smog_ds['smog_data'])
 
-        if len(smog_ds['smog_data']) <= 200:
-            size_of_smog_ds = len(smog_ds['smog_data'])
+        if size_of_smog_ds <= 1200:
             print(f'Length of currently available dataset is {size_of_smog_ds}. '
                   f'Dataset is too small to proceed. Try again later.')
 
-            return exit(1)
+            return exit(0)
 
         else:
+            print(f'Length of currently available dataset is {size_of_smog_ds}. '
+                  f'Dataset is fine. Proceeding.')
 
             return smog_ds
 
