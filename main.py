@@ -1,13 +1,16 @@
 import warnings
-from km_model import KMModel
+from models import KMModel
 from data_preprocessor import DataPreprocessor
 warnings.filterwarnings("ignore")
 
 
+
 def main():
 
+    print("Welcome to Smog Predictor. After each plotting you should close plotted image to proceed.")
     coordinates = DataPreprocessor().transform_to_coordinates()
     model_km = KMModel(coordinates)
+    print(model_km.cleaned_data.dtypes)
 
     while True:
 

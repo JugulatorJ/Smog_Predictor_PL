@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import requests
 
+pd.set_option('display.max_columns', None)
 
 class DataPackage:
 
@@ -78,5 +79,8 @@ class DataPreprocessor:
                                   right_on=['school.longitude', 'school.latitude'],
                                   suffixes=('_left', '_right'))
         clean_all_data = clean_all_data.drop_duplicates()
+        clean_all_data = clean_all_data.drop(columns=['school.name', 'school.street', 'school.post_code', 'school.city',
+                                                      'school.longitude', 'school.latitude'])
+        clean_all_data['timestamp'] = pd.to_datetime(clean_all_data['timestamp'])
 
         return clean_all_data

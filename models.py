@@ -1,4 +1,3 @@
-import joblib
 import data_preprocessor
 import locations
 import numpy as np
@@ -6,6 +5,7 @@ import warnings
 from time import time
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from matplotlib import pyplot as plt
 
@@ -144,3 +144,23 @@ class KMModel:
 
         return
 
+#
+# class RFRModel(KMModel):
+#
+#     def __init__(self):
+#
+#         super().__init__(self.cleaned_data)
+#         self.model = RandomForestRegressor()
+#
+#     def split_data(self):
+#
+#             X_train, X_test, y_train, y_test = train_test_split(self.cleaned_data['features'],
+#                                                                 self.cleaned_data['target'],
+#                                                                 test_size=0.2,
+#                                                                 random_state=1)
+#
+#             return X_train, X_test, y_train, y_test
+#
+#     def fit_model(self):
+#
+#         RFR = self.model
