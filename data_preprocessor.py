@@ -1,8 +1,23 @@
 import json
+import os
 import pandas as pd
 import requests
+from dotenv import load_dotenv
+
 
 pd.set_option('display.max_columns', None)
+load_dotenv()
+
+
+class Credentials:
+
+    @staticmethod
+    def take_key(name):
+
+        key = os.getenv(name)
+
+        return key
+
 
 class DataPackage:
 
@@ -28,10 +43,22 @@ class DataPackage:
 
             return smog_ds
 
+    @staticmethod
+    def get_additional_weather_data(user_location):
+        key = Credentials.take_key('WEATHER_API_KEY')
+        lat = user_location['latitude']
+        lon = user_location['longitude']
+        additional_weather_data = json.loads(requests.get(f'https://api.openweathermap.org/data/3.0/onecall?lat={lat}'
+                                                          f'&lon={lon}&exclude=minutely,hourly,daily&units=metric'
+                                                          f'&appid={key}').text)
+
+        return additional_weather_data
+
 
 class DataPreprocessor:
 
     smog_ds = DataPackage.get_smog_data()
+
 
     def get_locations(self):
 
@@ -78,9 +105,27 @@ class DataPreprocessor:
                                   left_on=['longitude', 'latitude'],
                                   right_on=['school.longitude', 'school.latitude'],
                                   suffixes=('_left', '_right'))
-        clean_all_data = clean_all_data.drop_duplicates()
-        clean_all_data = clean_all_data.drop(columns=['school.name', 'school.street', 'school.post_code', 'school.city',
-                                                      'school.longitude', 'school.latitude'])
+
+        clean_all_data.drop(columns=['school.name', 'school.street', 'school.post_code', 'school.city',
+                            'school.longitude', 'school.latitude'], inplace=True)
         clean_all_data['timestamp'] = pd.to_datetime(clean_all_data['timestamp'])
+        clean_all_data.drop_duplicates(inplace=True)
+        clean_all_data.reset_index(drop=True, inplace=True)
 
         return clean_all_data
+
+    @staticmethod
+    def create_weather_df(user_location):
+
+        weather_ds = DataPackage.get_additional_weather_data(user_location)
+        print(user_location)
+        weather_df = pd.DataFrame(weather_ds)
+        weather_df = weather_df.dropna()
+        weather_df = weather_df.drop(['lat', 'lon', 'timezone', 'timezone_offset'], axis=1)
+        weather_df = weather_df.drop(['clouds', 'dew_point', 'dt', 'feels_like', 'sunrise', 'sunset', 'uvi', 'visibility',
+                                      'weather', 'wind_deg', 'wind_gust', 'wind_speed'], axis=0)
+        weather_df = weather_df.transpose()
+        weather_df = weather_df.rename(columns={"humidity": "data.humidity_avg", "pressure": "data.pressure_avg",
+                                                "temp": "data.temperature_avg"})
+
+        return weather_df

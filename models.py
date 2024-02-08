@@ -14,10 +14,11 @@ warnings.filterwarnings("ignore")
 
 class KMModel:
 
-    def __init__(self, coordinates):
+    def __init__(self, coordinates, user_loc, additional_weather_data):
 
         self.coordinates = coordinates
-        self.user_loc = locations.UserLoc().get_user_loc()
+        self.user_loc = user_loc
+        self.additional_weather_data = additional_weather_data
         self.all_data = data_preprocessor.DataPreprocessor().create_all_data_frame()
         self.coordinates_labeled = data_preprocessor.DataPreprocessor().create_loc_data_frame()
         self.cleaned_data = data_preprocessor.DataPreprocessor().merge_data_sets()

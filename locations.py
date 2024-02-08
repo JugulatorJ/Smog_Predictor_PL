@@ -43,3 +43,4 @@ class UserLoc(VoivodLoc):
             except AttributeError:
 
                 print('Provide proper name of city in Poland.')
+

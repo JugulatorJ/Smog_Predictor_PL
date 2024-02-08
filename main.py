@@ -1,16 +1,21 @@
+import pandas as pd
+
+import data_preprocessor
+import locations
 import warnings
 from models import KMModel
-from data_preprocessor import DataPreprocessor
-warnings.filterwarnings("ignore")
 
+warnings.filterwarnings("ignore")
 
 
 def main():
 
     print("Welcome to Smog Predictor. After each plotting you should close plotted image to proceed.")
-    coordinates = DataPreprocessor().transform_to_coordinates()
-    model_km = KMModel(coordinates)
-    print(model_km.cleaned_data.dtypes)
+    user_loc = locations.UserLoc().get_user_loc()
+    weather = data_preprocessor.DataPreprocessor.create_weather_df(user_loc)
+    coordinates = data_preprocessor.DataPreprocessor().transform_to_coordinates()
+    model_km = KMModel(coordinates, user_loc, weather)
+
 
     while True:
 
