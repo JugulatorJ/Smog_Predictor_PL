@@ -115,17 +115,22 @@ class DataPreprocessor:
         return clean_all_data
 
     @staticmethod
-    def create_weather_df(user_location):
+    def create_user_weather_df(user_location):
 
         weather_ds = DataPackage.get_additional_weather_data(user_location)
-        print(user_location)
-        weather_df = pd.DataFrame(weather_ds)
-        weather_df = weather_df.dropna()
-        weather_df = weather_df.drop(['lat', 'lon', 'timezone', 'timezone_offset'], axis=1)
-        weather_df = weather_df.drop(['clouds', 'dew_point', 'dt', 'feels_like', 'sunrise', 'sunset', 'uvi', 'visibility',
-                                      'weather', 'wind_deg', 'wind_gust', 'wind_speed'], axis=0)
-        weather_df = weather_df.transpose()
-        weather_df = weather_df.rename(columns={"humidity": "data.humidity_avg", "pressure": "data.pressure_avg",
-                                                "temp": "data.temperature_avg"})
 
-        return weather_df
+        user_weather_df = pd.DataFrame(weather_ds)
+        user_weather_df.dropna(inplace=True)
+        timezone_offset = user_weather_df['timezone_offset']['dt']
+        user_weather_df = user_weather_df.drop(['lat', 'lon', 'timezone', 'timezone_offset'], axis=1)
+        user_weather_df = user_weather_df.drop(['clouds', 'dew_point', 'feels_like', 'sunrise', 'sunset', 'uvi',
+                                                'visibility', 'weather', 'wind_deg', 'wind_gust', 'wind_speed'], axis=0)
+        user_weather_df = user_weather_df.transpose()
+        user_weather_df['dt'] = pd.to_datetime(user_weather_df['dt'] + timezone_offset, unit='s')
+        user_weather_df.rename(columns={"dt": "timestamp","humidity": "data.humidity_avg",
+                                        "pressure": "data.pressure_avg", "temp": "data.temperature_avg"},
+                               inplace=True)
+        user_weather_df.insert(0, 'latitude', user_location['latitude'])
+        user_weather_df.insert(0, 'longitude', user_location['longitude'])
+
+        return user_weather_df

@@ -3,7 +3,9 @@ import pandas as pd
 import data_preprocessor
 import locations
 import warnings
-from models import KMModel
+
+import models
+from models import KMModel, SmogPredictionModel, Assesor
 
 warnings.filterwarnings("ignore")
 
@@ -12,9 +14,12 @@ def main():
 
     print("Welcome to Smog Predictor. After each plotting you should close plotted image to proceed.")
     user_loc = locations.UserLoc().get_user_loc()
-    weather = data_preprocessor.DataPreprocessor.create_weather_df(user_loc)
+    user_weather_df = data_preprocessor.DataPreprocessor.create_user_weather_df(user_loc)
     coordinates = data_preprocessor.DataPreprocessor().transform_to_coordinates()
-    model_km = KMModel(coordinates, user_loc, weather)
+    model_km = KMModel(coordinates, user_loc, user_weather_df)
+    print(user_weather_df.columns)
+    print(model_km.cleaned_data.columns)
+    model_rfr = SmogPredictionModel(model_km, user_loc, user_weather_df)
 
 
     while True:
@@ -53,6 +58,8 @@ def main():
             model_km.plot_clusters(clustered_model)
             user_cluster = model_km.user_cluster(clustered_model)
             model_km.plot_user_cluster(clustered_model, user_cluster)
+            assessor = models.Assesor(coordinates, user_loc, user_weather_df)
+            print(assessor.rfr_assesment())
             break
 
         elif answer.lower() == 'n':
@@ -61,6 +68,8 @@ def main():
             model_km.plot_clusters(clustered_model)
             user_cluster = model_km.user_cluster(clustered_model)
             model_km.plot_user_cluster(clustered_model, user_cluster)
+            assessor = models.Assesor(coordinates, user_loc, user_weather_df)
+            print(assessor.rfr_assesment())
             break
 
         else:

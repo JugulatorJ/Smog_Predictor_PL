@@ -1,12 +1,15 @@
 import data_preprocessor
 import locations
 import numpy as np
+import pandas as pd
 import warnings
 from time import time
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.impute import SimpleImputer
 from matplotlib import pyplot as plt
 
 warnings.filterwarnings("ignore")
@@ -14,11 +17,11 @@ warnings.filterwarnings("ignore")
 
 class KMModel:
 
-    def __init__(self, coordinates, user_loc, additional_weather_data):
+    def __init__(self, coordinates, user_loc, user_weather_df):
 
         self.coordinates = coordinates
         self.user_loc = user_loc
-        self.additional_weather_data = additional_weather_data
+        self.user_weather_df = user_weather_df
         self.all_data = data_preprocessor.DataPreprocessor().create_all_data_frame()
         self.coordinates_labeled = data_preprocessor.DataPreprocessor().create_loc_data_frame()
         self.cleaned_data = data_preprocessor.DataPreprocessor().merge_data_sets()
@@ -145,23 +148,58 @@ class KMModel:
 
         return
 
-#
-# class RFRModel(KMModel):
-#
-#     def __init__(self):
-#
-#         super().__init__(self.cleaned_data)
-#         self.model = RandomForestRegressor()
-#
-#     def split_data(self):
-#
-#             X_train, X_test, y_train, y_test = train_test_split(self.cleaned_data['features'],
-#                                                                 self.cleaned_data['target'],
-#                                                                 test_size=0.2,
-#                                                                 random_state=1)
-#
-#             return X_train, X_test, y_train, y_test
-#
-#     def fit_model(self):
-#
-#         RFR = self.model
+
+class SmogPredictionModel(KMModel):
+
+    def __init__(self, coordinates, user_loc, additional_weather_data):
+        super().__init__(coordinates, user_loc, additional_weather_data)
+        # Initialize the Random Forest models for PM10 and PM25
+        self.rf_model_pm10 = RandomForestRegressor(random_state=42)
+        self.rf_model_pm25 = RandomForestRegressor(random_state=42)
+        self.imputer = SimpleImputer(strategy='median')
+
+    def train_models(self):
+
+        X = self.cleaned_data[['longitude', 'latitude', 'data.humidity_avg', 'data.pressure_avg', 'data.temperature_avg']]
+        X = pd.DataFrame(self.imputer.fit_transform(X), columns=X.columns)
+        y_pm10 = self.cleaned_data['data.pm10_avg']
+        y_pm25 = self.cleaned_data['data.pm25_avg']
+        X_train_pm10, X_test_pm10, y_train_pm10, y_test_pm10 = train_test_split(X, y_pm10, test_size=0.2,
+                                                                                random_state=42)
+        self.rf_model_pm10.fit(X_train_pm10, y_train_pm10)
+        X_train_pm25, X_test_pm25, y_train_pm25, y_test_pm25 = train_test_split(X, y_pm25, test_size=0.2,
+                                                                                random_state=42)
+        self.rf_model_pm25.fit(X_train_pm25, y_train_pm25)
+        pm10_pred = self.rf_model_pm10.predict(X_test_pm10)
+        pm25_pred = self.rf_model_pm25.predict(X_test_pm25)
+
+        return y_test_pm10, y_test_pm25, pm10_pred, pm25_pred
+
+
+    def predict_smog(self):
+
+        self.train_models()
+
+        prediction_features = self.user_weather_df[['longitude', 'latitude', 'data.humidity_avg', 'data.pressure_avg', 'data.temperature_avg']]
+        predicted_pm10 = self.rf_model_pm10.predict(prediction_features)[0]
+        predicted_pm25 = self.rf_model_pm25.predict(prediction_features)[0]
+        prediction_output = f"Predicted level of PM10 is: {predicted_pm10}, PM25: {predicted_pm25}. " \
+                            f"Your location is longitude {self.user_loc['longitude']}, " \
+                            f"latitude {self.user_loc['latitude']}"
+
+        return prediction_output
+
+
+class Assesor(SmogPredictionModel):
+
+    def __init__(self, coordinates, user_loc, additional_weather_data):
+        super().__init__(coordinates, user_loc, additional_weather_data)
+
+
+    def rfr_assesment(self):
+
+        y_test_pm10, y_test_pm25, pm10_pred, pm25_pred = self.train_models()
+
+        print("PM10 MSE:", mean_squared_error(y_test_pm10, pm10_pred))
+        print("PM25 MSE:", mean_squared_error(y_test_pm25, pm25_pred))
+
